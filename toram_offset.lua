@@ -1,9 +1,27 @@
--- class MobaPlayerSecondaryStatus :  | get_CriticalDmg
-o_p_cdm = 0x109B518
--- class MobaPlayerSecondaryStatus :  | get_CriticalMagicDmg
-o_m_cdm = 0x109B838
--- class PlayerAttackBase :  | checkAbnormalPercent
-o_ailment_res = 0x10FDD88
+-- class PlayerSecondaryStatus :  | get_ElementPower
+o_dte = 0x10EC9F4
+-- class PlayerSecondaryStatus :  | get_GuardSpeed
+o_guardspeed = 0x10ED0F8
+-- class PlayerSecondaryStatus :  | get_GuardPower
+o_guardpower = 0x10ECD18
+-- class PlayerSecondaryStatus :  | get_AvoidSpeed
+o_evaspeed = 0x10ED630
+-- class PlayerSecondaryStatus :  | GetNextAtkTime
+o_nextattack = 0x10EE0EC
+-- class PlayerSecondaryStatus :  | GetSkillDelayRate1
+o_skilldelay1 = 0x10EE3D4
+-- class PlayerSecondaryStatus :  | GetSkillDelayRate2
+o_skilldelay2 = 0x10EE414
+-- class PlayerSecondaryStatus :  | get_Def
+o_def = 0x10EAC58
+-- class PlayerSecondaryStatus :  | get_Mdef
+o_mdef = 0x10EAC8C
+-- class PlayerSecondaryStatus :  | get_CriticalDmg
+o_p_cdm = 0x10EC580
+-- class PlayerSecondaryStatus :  | get_CriticalMagicDmg
+o_m_cdm = 0x10EC8A0
+-- class PlayerAttackBase :  | get_AntiVirus
+o_ailment_res = 0x111BD80
 -- class MobBattleStatus :  | get_ExpDefNormal
 o_mob_prorate_normal = 0xF9E018
 -- class MobBattleStatus :  | get_ExpDefSkill
