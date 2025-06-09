@@ -1,0 +1,1661 @@
+-- ❏━━━━━━━━━━━━━━❒ -- START -- ❏━━━━━━━━━━━━━━❒ -- 
+gg.setVisible(false)
+gg.setRanges(gg.REGION_C_ALLOC | gg.REGION_ANONYMOUS)
+--toast.warn("Please wait...")
+local imports = {
+    "android.*",
+    "android.app.*",
+    "android.content.*",
+    "android.graphics.*",
+    "android.graphics.drawable.*",
+    "android.net.Uri",
+    "android.provider.Settings",
+    "android.os.*",
+    "android.view.*",
+    "android.widget.*",
+    "android.ext.*",
+    "android.text.Html",
+    "android.graphics.PorterDuffColorFilter",
+    "android.graphics.PorterDuff",
+    "android.os.Handler",
+    "android.os.Looper",
+    "android.content.res.ColorStateList",
+    "android.widget.AdapterView$OnItemSelectedListener",
+    "android.widget.CompoundButton$OnCheckedChangeListener",
+    "android.widget.ArrayAdapter",
+    "android.graphics.drawable.GradientDrawable",
+    "android.graphics.drawable.ClipDrawable",
+    "android.view.Gravity",
+    "android.view.animation.*",
+    "android.animation.ObjectAnimator",
+    "com.ldoublem.loadingviewlib.view.*",
+    "com.ldoublem.loadingviewlib.view.base.LVBase",
+    "com.ldoublem.loadingviewlib.LVCircularCD",
+    "com.ldoublem.loadingviewlib.view.LVCircularRing",
+    "com.ldoublem.loadingviewlib.view.LVBlock",
+    "com.romainpiel.shimmer.*",
+    "java.io.File",
+    "java.lang.*",
+    "java.util.*"
+}
+
+for _, lib in ipairs(imports) do
+    import(lib)
+end
+Gravity = luajava.bindClass("android.view.Gravity")
+toast.setGravity(Gravity.BOTTOM)
+toast.setMode(1)
+
+-- apps
+info = gg.getTargetInfo()
+get_label = info.label -- Get label name
+get_vers = info.versionName -- Get Version App
+get_pkgs = info.packageName -- Get Package Name
+
+-- TARGET APP
+targetApk = get_label
+targetPkg = "com.kiloo.subwaysurf"
+
+-- HEADER
+header_top_left = get_label
+
+-- About
+telegram="mizuki3101"
+
+main_bg_color=0xff170d13
+color_accent1=0xFFff5c98
+color_accent2=0xff005f6b
+
+--- button
+button_text=0xffffffff
+button_text_on=0xFF6bff9a
+button_text_off=0xFFFF6B6B
+button_color=0xFF333333
+button_color_on=0xff255736
+button_color_off=0xff57252c
+button_color_off2=0x90333333
+
+-- checkbox
+checkbox_color_on=0xFF3388de
+checkbox_color_off=0xff666666
+sidebar_color=0xff57252c
+sidebar_color2=0xff255736
+sidebar_text_color=0xffa3daff
+stroke_color=0xff7a323c
+stroke_color2=0xff327a4a
+button_stroke_color = 0xff434a5e
+button_stroke_color_on = 0xff307346
+button_stroke_color_off = 0xff733030
+button_stroke_color_off2 = 0x90434a5e
+text_color=0xffffffff
+text_color2=0x50ffffff
+reflection_color1=0xffFDB2CB
+reflection_color2=0xfffccd4a
+
+-- Image 
+Author1 = loadbitmap("https://raw.githubusercontent.com/cabinz3q/assets/refs/heads/main/14c9d5164e6db66c4e5d3abed89bafc3.jpg")
+CloseIMG = loadbitmap("https://img.icons8.com/doodle/480/delete-sign.png")
+Author2 = Author1
+
+-- Font Awesome
+ic_user=""
+ic_enemy=""
+ic_quest=""
+ic_xray=""
+ic_sword=""
+ic_help=""
+
+
+local Point = HotPoint.instance
+local Point_posX = FloatPanel.getDeclaredField("j").setAccessible(true)
+local Point_posY = FloatPanel.getDeclaredField("k").setAccessible(true)
+local Point_sizePx = HotPoint.getDeclaredMethod("getSizePx").setAccessible(true).invoke(Point).."px"
+local Point_alpha = FloatPanel.getDeclaredMethod("getLayoutAlpha").setAccessible(true).invoke(Point)
+local Point_mVanishingTime = HotPoint.getDeclaredMethod("getVanishingTime").setAccessible(true).invoke(Point)
+Point.f()
+local window = activity.getSystemService("window")
+local mObjectAnimator, dObjectAnimator
+
+local function sparkle_animation(view)
+    if not mObjectAnimator then
+        mObjectAnimator = ObjectAnimator.ofFloat(view, "alpha", 0, Point_alpha)
+        mObjectAnimator.setDuration(800)
+        mObjectAnimator.setInterpolator(DecelerateInterpolator())
+    end
+end
+
+local function zoom_animation(view)
+    if not dObjectAnimator then
+        dObjectAnimator = ObjectAnimator.ofFloat(view, "scaleX", 0, 1)
+        dObjectAnimator.setDuration(600)
+        dObjectAnimator.setInterpolator(DecelerateInterpolator())
+    end
+end
+
+local function zoom_startanimation()
+    if dObjectAnimator then
+        dObjectAnimator.start()
+    end
+end
+
+local function sparkle_startanimation()
+    if mObjectAnimator then
+        mObjectAnimator.start()
+    end
+end
+
+local function getLayoutParams()
+    local LayoutParams = WindowManager.LayoutParams
+    local layoutParams = luajava.new(LayoutParams)
+    layoutParams.type = (Build.VERSION.SDK_INT >= 26) and LayoutParams.TYPE_APPLICATION_OVERLAY or LayoutParams.TYPE_PHONE
+    layoutParams.format = PixelFormat.RGBA_8888
+    layoutParams.flags = LayoutParams.FLAG_NOT_FOCUSABLE
+	layoutParams.gravity = Gravity.TOP | Gravity.LEFT
+    layoutParams.width = LayoutParams.WRAP_CONTENT
+    layoutParams.height = LayoutParams.WRAP_CONTENT
+    return layoutParams
+end
+
+local function getShapeBackground(color, radius, strokeWidth, strokeColor)
+    local drawable = luajava.new(GradientDrawable)
+    drawable.setShape(GradientDrawable.RECTANGLE)
+    drawable.setColor(color)
+    drawable.setCornerRadii({radius, radius, radius, radius, radius, radius, radius, radius})
+    if strokeWidth and strokeColor then
+        drawable.setStroke(strokeWidth, strokeColor)
+    end
+    return drawable
+end
+
+local function getShapeBackground2(color, topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius, strokeWidth, strokeColor)
+    local drawable = luajava.new(GradientDrawable)
+    drawable.setShape(GradientDrawable.RECTANGLE)
+    drawable.setColor(color)
+    -- Set individual corner radii: {topLeft, topLeft, topRight, topRight, bottomRight, bottomRight, bottomLeft, bottomLeft}
+    drawable.setCornerRadii({
+        topLeftRadius, topLeftRadius,
+        topRightRadius, topRightRadius,
+        bottomRightRadius, bottomRightRadius,
+        bottomLeftRadius, bottomLeftRadius
+    })
+    if strokeWidth and strokeColor then
+        drawable.setStroke(strokeWidth, strokeColor)
+    end
+    return drawable
+end
+
+local function iOSwitch(isChecked)
+    local trackColor = isChecked and 0x7028AC62 or 0x70DF4A6B
+    local thumbColor = isChecked and 0xFF28AC62 or 0xFFDF4A6B
+    local radius = 70
+    local thumbRadius = 25
+    local width = 55
+    local height = 45
+    local trackDrawable = luajava.new(GradientDrawable)
+    trackDrawable.setShape(GradientDrawable.RECTANGLE)
+    trackDrawable.setColor(trackColor)
+    trackDrawable.setCornerRadius(radius)
+    trackDrawable.setSize(width, height)
+    local thumbDrawable = luajava.new(GradientDrawable)
+    thumbDrawable.setShape(GradientDrawable.OVAL)
+    thumbDrawable.setColor(thumbColor)
+    thumbDrawable.setSize(thumbRadius * 2, thumbRadius * 2)
+    local thumbX = isChecked and (width - thumbRadius * 2) or 0
+    local thumbY = (height - thumbRadius * 2) / 2
+    thumbDrawable.setBounds(thumbX, thumbY, thumbX + thumbRadius * 2, thumbY + thumbRadius * 2)
+    return trackDrawable, thumbDrawable
+end
+
+function updateiOSwitch(switchView, isChecked)
+    local trackDrawable, thumbDrawable = iOSwitch(isChecked)
+    switchView.setTrackDrawable(trackDrawable)
+    switchView.setThumbDrawable(thumbDrawable)
+end
+
+local log = function(text,color, size)
+    local tmp = loadlayout {
+        LinearLayout, 
+        padding = "5dp",
+        layout_marginBottom = "-5dp",
+        orientation = "horizontal",
+        {
+            TextView,
+            text = Html.fromHtml("<font color='#f9c00c'> ["..os.date("  %Y-%m-%d %H:%M:%S] </font>")),
+            textSize = size or '8sp',
+            textColor = color or text_color or "#FF303030",
+            gravity = "center_vertical",
+            layout_width = "wrap_content",
+        },
+        {
+            TextView,
+            text = Html.fromHtml(text),
+            textSize = size or '8sp',
+            textColor = color or text_color or "#FF303030",
+            gravity = "center_vertical",
+            layout_width = "wrap_content",
+        }
+    }
+--    Runlog_list.addView(tmp)
+--    Runlog.fullScroll(View.FOCUS_DOWN)
+    print(os.date(" [%Y-%m-%d %H:%M:%S] ") .. text)
+     toast.hint(text)
+end
+
+
+function SideBarLayout(id, text, align)
+    return {
+        TextView;
+        layout_width = "wrap_content"; -- Ubah ke wrap_content untuk fleksibilitas
+        layout_height = "wrap_content";
+        id = id;
+        text = text;
+        textColor = color_accent1;
+        textSize = "12sp";
+        gravity = align or "center";
+        padding = "2dp"; -- Kurangi padding dari 5dp ke 2dp
+    }
+end
+
+page1 = {
+    LinearLayout,
+    layout_width="fill",
+    layout_height="fill",
+    padding = "1dp", 
+    paddingTop = "-1dp",
+    {
+        LinearLayout,
+        layout_height="match_parent",
+        layout_margin="5.0dp",
+        layout_width="match_parent",
+        background = getShapeBackground(0x80000000, 24),  
+        {
+            ScrollView,
+            layout_height="match_parent",
+            padding="0.0dp",
+            layout_width="match_parent",
+            VerticalScrollBarEnabled=true,
+            {
+                LinearLayout,
+                layout_height="match_parent",
+                layout_width="match_parent",
+                orientation="vertical",
+                id="PageLayout_1",
+            },
+        },
+    },
+}
+
+page2 = {
+    LinearLayout,
+    layout_width="fill",
+    layout_height="fill",
+    padding = "1dp", 
+    {
+        LinearLayout,
+        layout_height="match_parent",
+        layout_margin="5.0dp",
+        layout_width="match_parent",
+        background = getShapeBackground(0x80000000, 24),  
+        {
+            ScrollView,
+            layout_height="match_parent",
+            padding="0.0dp",
+            layout_width="match_parent",
+            VerticalScrollBarEnabled=true,
+            {
+                LinearLayout,
+                layout_height="match_parent",
+                layout_width="match_parent",
+                orientation="vertical",
+                id="PageLayout_2",
+            },
+        },
+    },
+}
+
+page3 = {
+    LinearLayout,
+    layout_width="fill",
+    layout_height="fill",
+    padding = "1dp", 
+    {
+        LinearLayout,
+        layout_height="match_parent",
+        layout_margin="5.0dp",
+        layout_width="match_parent",
+        background = getShapeBackground(0x80000000, 24),  
+        {
+            ScrollView,
+            layout_height="match_parent",
+            padding="0.0dp",
+            layout_width="match_parent",
+            VerticalScrollBarEnabled=true,
+            {
+                LinearLayout,
+                layout_height="match_parent",
+                layout_width="match_parent",
+                orientation="vertical",
+                id="PageLayout_3",
+            },
+        },
+    },
+}
+
+xfc = {
+    LinearLayout;
+    layout_height = "fill";
+    orientation = "vertical";
+    id = "touch";
+    layout_width = "fill";
+    {
+        LinearLayout;
+        background = getShapeBackground(main_bg_color, 18, 2, sidebar_color);
+        orientation = "vertical";
+        id = "ooo";
+        layout_width = "321dp";
+        layout_height = "247dp";
+        {
+            -- Header LinearLayout dengan background untuk username dan tombol exit/hide
+            LinearLayout;
+            layout_width = "match_parent";
+            layout_height = "wrap_content";
+            orientation = "horizontal";
+            -- background = getShapeBackground2(0xFF4A4D70, 22, 22, 0, 0, 2, 0xff52557a),
+            gravity = "center_vertical";
+            {
+                -- Username di sebelah kiri
+                ShimmerTextView;
+                layout_width = "0dp";
+                layout_weight = "1";
+                layout_height = "wrap_content";
+                id = "header_left",
+                text = header_top_left;
+                textSize = "14sp";
+                layout_marginLeft = "8dp";
+                textColor = "#FFCBB5FF";
+                reflectionColor = reflection_color1,
+                gravity = "start|center_vertical";
+            };
+            {
+                -- Container untuk tombol exit dan hide
+                LinearLayout;
+                layout_width = "wrap_content";
+                layout_height = "wrap_content";
+                orientation = "horizontal";
+                padding = "2dp";
+                {
+                    -- Tombol Exit
+                    TextView;
+                    layout_width = "34dp";
+                    layout_height = "wrap_content";
+                    text = "Exit";
+                    textSize = "12sp";
+                    textColor = "#FFFF6B6B";
+                    padding = "2dp";
+                    layout_marginRight = "8dp";
+                    background = getShapeBackground(0xff57252c, 14, 2, 0xff7a323c),
+                    id = "btn_exit";
+                    gravity = "center";
+                };
+                {
+                    -- Tombol Hide
+                    TextView;
+                    layout_width = "34dp";
+                    layout_height = "wrap_content";
+                    text = "Hide";
+                    textSize = "12sp";
+                    textColor = "#FF6bff9a";
+                    padding = "2dp";
+                    background = getShapeBackground(0xff255736, 14, 2, 0xff327a4a),
+                    id = "btn_hide";
+                    gravity = "center";
+                };
+            };
+        };
+        {
+            -- Pages section with Profile to the right
+            LinearLayout;
+            layout_height = "wrap_content";
+            orientation = "vertical";
+            layout_width = "match_parent";
+            gravity = "center";
+            {
+                -- ScrollView untuk tab
+                ScrollView;
+                layout_width = "match_parent";
+                layout_height = "wrap_content";
+                HorizontalScrollBarEnabled = false;
+                {
+                    LinearLayout;
+                    layout_height = "wrap_content";
+                    orientation = "horizontal";
+                    layout_width = "wrap_content";
+                    paddingStart = "10dp";
+                    paddingEnd = "10dp";
+                    {
+                        LinearLayout;
+                        layout_width = "wrap_content";
+                        layout_margin = "2dp"; -- Kurangi margin untuk mendekatkan tab
+                        layout_height = "wrap_content";
+                        gravity = "center";
+                        SideBarLayout("PlayerMenu", "Player", "start|center"),
+                    };
+                    {
+                        LinearLayout;
+                        layout_width = "wrap_content";
+                        layout_margin = "2dp"; -- Kurangi margin
+                        layout_height = "wrap_content";
+                        gravity = "center";
+                        SideBarLayout("EnemyMenu", "Enemy", "start|center"),
+                    };
+                    {
+                        LinearLayout;
+                        layout_width = "wrap_content";
+                        layout_margin = "2dp"; -- Kurangi margin
+                        layout_height = "wrap_content";
+                        gravity = "center";
+                        SideBarLayout("QuestMenu", "Quest", "start|center"),
+                    };
+                };
+            };
+            {
+                -- Garis di bawah tab
+                View;
+                layout_width = "match_parent";
+                layout_height = "1dp";
+                background = getShapeBackground(sidebar_color, 0);
+                layout_marginTop = "-2.75dp";
+                layout_marginBottom = "0dp";
+                layout_marginStart = "8dp";
+                layout_marginEnd = "8dp";
+            };
+        };
+        {
+            -- Main content area (full width)
+            LinearLayout;
+            layout_height = "0dp";
+            layout_weight = "1";
+            orientation = "vertical";
+            layout_width = "match_parent";
+            {
+                LinearLayout;
+                layout_height = "match_parent";
+                layout_width = "match_parent";
+                {
+                    PageView;
+                    layout_width = "match_parent";
+                    id = "page_main";
+                    layout_height = "match_parent";
+                    pages = {
+                        page1,
+                        page2,
+                        page3,
+                    };
+                };
+            };
+        };
+        {
+            -- Konfirmasi Exit (initially hidden)
+            LinearLayout;
+            id = "confirm_exit";
+            layout_width = "match_parent";
+            layout_height = "wrap_content";
+            visibility = View.GONE;
+            orientation = "vertical";
+            layout_margin = "8dp";
+            background = getShapeBackground(0xff57252c, 16, 2, 0xff7a323c);
+            {
+                TextView;
+                layout_width = "match_parent";
+                layout_height = "wrap_content";
+                text = "Are you sure you want to exit?";
+                textSize = "12sp";
+                textColor = "#FFFFFFFF";
+                gravity = "center";
+                padding = "8dp";
+            };
+            {
+                LinearLayout;
+                layout_width = "match_parent";
+                layout_height = "wrap_content";
+                orientation = "horizontal";
+                gravity = "center";
+                layout_margin = "4dp";
+                {
+                    TextView;
+                    layout_width = "0dp";
+                    layout_weight = "1";
+                    layout_height = "wrap_content";
+                    text = "Cancel";
+                    gravity = "center";
+                    textColor = "#FF6bff9a";
+                    background = getShapeBackground(0xff255736, 14, 2, 0xff327a4a);
+                    padding = "8dp";
+                    layout_margin = "2dp";
+                    id = "btn_cancel_exit";
+                };
+                {
+                    TextView;
+                    layout_width = "0dp";
+                    layout_weight = "1";
+                    layout_height = "wrap_content";
+                    text = "Confirm Exit";
+                    gravity = "center";
+                    textColor = "#FFFF6B6B";
+                    background = getShapeBackground(0xff57252c, 14, 2, 0xff7a323c);
+                    padding = "8dp";
+                    layout_margin = "2dp";
+                    id = "btn_confirm_exit";
+                };
+            };
+        };
+    };
+}
+
+xfq = {
+    LinearLayout;
+    layout_height="fill";
+    layout_width="fill";
+    {
+        LinearLayout;
+        layout_width="wrap_content";
+        layout_height="wrap_content";
+        {
+            ImageView;
+            layout_width=Point_sizePx;
+            layout_height=Point_sizePx;
+            scaleType="fitCenter";
+            id="suspended_ball";
+        };
+    };
+}
+
+mainLayoutParams = getLayoutParams()
+
+-- Updated invoke function with exit confirmation functionality
+invoke = function()
+    xfq = loadlayout(xfq)
+    xfc = loadlayout(xfc)
+    suspended_ball.setImageBitmap(loadbitmap(Point))
+
+    local state = { isFocusable = false }
+    local mainLayoutParams = getLayoutParams()
+    local function refreshState()
+        mainLayoutParams.flags = state.isFocusable and WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        window.updateViewLayout(xfq, mainLayoutParams)
+        window.updateViewLayout(xfc, mainLayoutParams)
+    end
+
+    local function showToast(msg, duration)
+        if duration then
+            toast.error(msg, duration)
+        else
+            toast.hint(msg)
+        end
+    end
+
+    local function Point_postCallback(post)
+        local runnable = {
+            run = function()
+                Tools.a(suspended_ball, 0.0)
+            end,
+        }
+        rx.a().removeCallbacks(runnable)
+        if post then
+            suspended_ball.setImageAlpha(255.0)
+            rx.a().postDelayed(runnable, Point_mVanishingTime * 1000)
+        end
+    end
+
+    -- HIDE MENU
+    local function onMinimize(v)
+        window.removeView(xfc)
+        sparkle_animation(suspended_ball)
+        sparkle_startanimation()
+        state.isFocusable = false
+        window.addView(xfq, mainLayoutParams)
+        if (Point_mVanishingTime < 0) then
+            Tools.a(suspended_ball, 255.0)
+        else
+            Point_postCallback(true)
+        end
+        refreshState()
+    end
+
+    -- SHOW EXIT CONFIRMATION
+    local function showExitConfirmation(v)
+        confirm_exit.setVisibility(View.VISIBLE)
+        page_main.setVisibility(View.GONE)
+    end
+
+    -- HIDE EXIT CONFIRMATION
+    local function hideExitConfirmation(v)
+        confirm_exit.setVisibility(View.GONE)
+        page_main.setVisibility(View.VISIBLE)
+    end
+
+    -- KILL MENU
+    local function onRealExit(v)
+        showToast("Menu Killed~", 1500)
+        Point_posX.setInt(Point, mainLayoutParams.x)
+        Point_posY.setInt(Point, mainLayoutParams.y)
+        FloatPanel.getDeclaredMethod("b").setAccessible(true).invoke(Point)
+        Point.d()
+        showToast("Thanks for using! Goodbye")
+        window.removeView(xfc)
+        Point_postCallback(false)
+        Lock.unUi()
+        os.exit()
+    end
+
+    suspended_ball.onTouch = function(v, event)
+        local action = event.getAction()
+        if action == MotionEvent.ACTION_DOWN then
+            isMove = false
+            RawX = event.getRawX()
+            RawY = event.getRawY()
+            x = mainLayoutParams.x
+            y = mainLayoutParams.y
+        elseif action == MotionEvent.ACTION_MOVE then
+            isMove = true
+            mainLayoutParams.x = x + (event.getRawX() - RawX)
+            mainLayoutParams.y = y + (event.getRawY() - RawY)
+            window.updateViewLayout(xfq, mainLayoutParams)
+        end
+    end
+
+    touch.onTouch = function(v, event)
+        local action = event.getAction()
+        if action == MotionEvent.ACTION_DOWN then
+            isMove = false
+            RawX = event.getRawX()
+            RawY = event.getRawY()
+            x = mainLayoutParams.x
+            y = mainLayoutParams.y
+        elseif action == MotionEvent.ACTION_MOVE then
+            isMove = true
+            mainLayoutParams.x = x + (event.getRawX() - RawX)
+            mainLayoutParams.y = y + (event.getRawY() - RawY)
+            window.updateViewLayout(xfc, mainLayoutParams)
+        end
+    end
+
+    suspended_ball.onClick = function(v)
+        window.removeView(xfq)
+        zoom_animation(ooo)
+        zoom_startanimation()
+        state.isFocusable = true
+        window.addView(xfc, mainLayoutParams)
+        Point_postCallback(false)
+        refreshState()
+    end
+
+    -- Updated button click handlers
+    btn_hide.onClick = onMinimize
+    btn_exit.onClick = showExitConfirmation  -- Changed from onLongClick to onClick
+    btn_cancel_exit.onClick = hideExitConfirmation
+    btn_confirm_exit.onClick = onRealExit
+    
+    local function page_onClick(page, index)
+        page.onClick = function()
+            page_main.showPage(index)
+        end
+    end
+
+    local pages = {
+        PlayerMenu,
+        EnemyMenu,
+        QuestMenu,
+    }
+    for i, page in ipairs(pages) do
+        page_onClick(page, i - 1)
+    end
+
+local function setBackgroundForPages(selectedIndex)
+    for i, page in ipairs(pages) do
+        local color = (i - 1 == selectedIndex) and getShapeBackground2(sidebar_color, 10, 10, 0, 0, 2 , 0xff7a323c) or getShapeBackground(0x00ffffff, 0)
+        local colortext = (i - 1 == selectedIndex) and color_accent1 or text_color
+        page.setBackgroundDrawable(color)
+        page.setTextColor(colortext)
+    end
+end
+
+    page_main.setOnPageChangeListener(PageView.OnPageChangeListener{
+        onPageSelected = function(v)
+            setBackgroundForPages(v)
+        end
+    })
+
+    
+    
+    
+
+    sparkle_animation(suspended_ball)
+    sparkle_startanimation()
+
+    local shimmer = Shimmer()
+    local shimmerElements = {
+        header_left
+        
+    }
+    for _, element in ipairs(shimmerElements) do
+        shimmer.start(element)
+    end
+
+    shimmer.setRepeatCount(-1)
+    shimmer.setDuration(2500)
+    shimmer.setStartDelay(700)
+    shimmer.setDirection(Shimmer.ANIMATION_DIRECTION_LTR)
+
+-- Fungsi untuk membuat tab dengan fungsi open dan close yang sama
+local function createTab()
+    return {
+        text = text, -- asumsikan variabel 'text' sudah didefinisikan sebelumnya
+        open = function(self)
+            Name = self.text
+            local runnable = {
+                run = function()
+                    pcall(On, self.value)
+                end,
+            }
+            rx.b(runnable)
+        end,
+        close = function(self)
+            Name = self.text
+            local runnable = {
+                run = function()
+                    pcall(Off, self.value)
+                end,
+            }
+            rx.b(runnable)
+        end,
+    }
+end
+
+-- Membuat tabel player_tabs dengan 9 elemen menggunakan fungsi createTab
+local tab1 = {}
+for i = 1, 9 do
+    tab1[i] = createTab()
+end
+
+local tab2 = {}
+for i = 1, 8 do
+    tab2[i] = createTab()
+end
+
+local tab_quest = {}
+for i = 1, 17 do
+    tab_quest[i] = createTab()
+end
+
+local tab_attack = {}
+for i = 1, 17 do
+    tab_attack[i] = createTab()
+end
+
+function CreateMenu(arr, func, menuType, menuItems)
+    if type(arr) ~= 'table' then
+        return error('The parameter must be of table type')
+    end
+
+    local function createCustomText(index, customText)
+        return string.format(customText or 'List function example%d', index)
+    end
+
+    local function enableMarquee(textView, text)
+        local textLengthThreshold = 10
+        if #text > textLengthThreshold then
+            textView.setSelected(true)
+        end
+    end
+
+    local function createTextView(id, text, textColor, marginStart, marginEnd, layoutWeight)
+        return {
+            TextView;
+            id = id;
+            text = Html.fromHtml(text);
+            textSize = "10sp";
+            textColor = textColor or "#FF7BB4ED";
+            layout_marginStart = marginStart or "2.5dp";
+            layout_marginEnd = marginEnd or "2.5dp";
+            layout_width = layoutWeight and "0dp" or "wrap_content";
+            layout_weight = layoutWeight or nil;
+            layout_gravity = "center_vertical";
+            ellipsize = "marquee";
+            singleLine = "true";
+            focusable = "true";
+            focusableInTouchMode = "true";
+        }
+    end
+
+    local function createSwitch(id, isChecked, onChangeListener)
+        local trackDrawable, thumbDrawable = iOSwitch(isChecked)
+        return {
+            Switch;
+            id = id;
+            layout_width = "wrap_content";
+            layout_height = "wrap_content";
+            layout_marginStart = "2.5dp";
+            layout_marginEnd = "2.5dp";
+            checked = isChecked;
+            trackDrawable = trackDrawable;
+            thumbDrawable = thumbDrawable;
+            onCheckedChangeListener = onChangeListener;
+        }
+    end
+
+    local function applyCheckboxStyling(checkboxView, isChecked)
+        if checkboxView and checkboxView.ButtonDrawable then
+            if isChecked then
+                checkboxView.ButtonDrawable.setColorFilter(PorterDuffColorFilter(checkbox_color_on or 0xFF00FF00, PorterDuff.Mode.SRC_ATOP))
+            else
+                checkboxView.ButtonDrawable.setColorFilter(PorterDuffColorFilter(checkbox_color_off or 0xFFFF0000, PorterDuff.Mode.SRC_ATOP))
+            end
+        end
+    end
+
+    local function createCheckbox(id, isChecked, onChangeListener)
+        return {
+            CheckBox;
+            id = id;
+            layout_width = "wrap_content";
+            layout_height = "wrap_content";
+            layout_marginStart = "2.5dp";
+            layout_marginEnd = "2.5dp";
+            checked = isChecked;
+            onCheckedChangeListener = function(view, checked)
+                applyCheckboxStyling(view, checked)
+                if onChangeListener then
+                    onChangeListener(view, checked)
+                end
+            end;
+        }
+    end
+
+    local function createButton(id, text, onClickListener)
+        return {
+            Button;
+            id = id;
+            text = text;
+            layout_width = "match_parent";
+            layout_height = "34dp";
+            layout_marginStart = "2.5dp";
+            layout_marginEnd = "2.5dp";
+            textSize = "10sp";
+            onClick = onClickListener;
+        }
+    end
+
+    local function createToggleButton(id, text, textOn, textOff, isChecked, onChangeListener)
+        return {
+            ToggleButton;
+            id = id;
+            text = text,
+            textOn = textOn or "ON";
+            textOff = textOff or "OFF";
+            layout_width = "match_parent";
+            layout_height = "34dp";
+            layout_marginStart = "2.5dp";
+            layout_marginEnd = "2.5dp";
+            checked = isChecked;
+            textSize = "10sp";
+            onCheckedChangeListener = onChangeListener;
+        }
+    end
+
+    local function createSeekBar(id, min, max, progress, onChangeListener)
+        return {
+            SeekBar;
+            id = id;
+            layout_width = "match_parent";
+            layout_height = "wrap_content";
+            layout_marginStart = "2.5dp";
+            layout_marginEnd = "2.5dp";
+            layout_marginTop = "5dp";
+            min = min or 0;
+            max = max or 100;
+            progress = progress or 0;
+            onSeekBarChangeListener = onChangeListener;
+        }
+    end
+
+    local function createSpinner(id, items, onItemSelectedListener)
+        return {
+            Spinner;
+            id = id;
+            layout_width = "match_parent";
+            layout_height = "wrap_content";
+            layout_marginStart = "2.5dp";
+            layout_marginEnd = "2.5dp";
+            layout_marginTop = "5dp";
+        }
+    end
+
+    -- Perbaikan: makeTextClickable sekarang bisa toggle checkbox/switch pada tab 2
+    local function makeTextClickable(textView, controlId, controlType)
+        textView.setOnClickListener({
+            onClick = function(view)
+                local control = _G[controlId]
+                if control then
+                    if controlType == "switch" or controlType == "checkbox" then
+                        local currentState = control.isChecked()
+                        control.setChecked(not currentState)
+                    end
+                end
+            end
+        })
+    end
+
+    local function createLayout(menuItems, customAction)
+        for i, item in ipairs(menuItems) do
+            if type(item) == "table" and #item > 1 and item[1] and item[1].type and
+                (item[1].type == "checkbox" or item[1].type == "switch") then
+                local rowLayout = {
+                    LinearLayout;
+                    orientation = "horizontal";
+                    layout_width = "match_parent";
+                    layout_height = "wrap_content";
+                    padding = "4.1dp";
+                }
+
+                for j, subItem in ipairs(item) do
+                    local subItemName = subItem.name or ("Unknown Option " .. j)
+                    local subItemType = subItem.type or "switch"
+                    local subItemAction = subItem.action
+                    local isChecked = false
+
+                    local componentId = "component_" .. menuType .. "_" .. i .. "_" .. j
+                    local textId = "TabText" .. menuType .. "_" .. i .. "_" .. j
+
+                    local textLayout = {
+                        LinearLayout;
+                        orientation = "vertical";
+                        layout_width = "0dp";
+                        layout_weight = 1;
+                        layout_height = "wrap_content";
+                        layout_marginStart = "2.5dp";
+                        layout_marginEnd = "1dp";
+                        layout_gravity = "center_vertical";
+                    }
+
+                    table.insert(textLayout, {
+                        TextView;
+                        id = textId;
+                        text = Html.fromHtml(subItemName);
+                        textSize = "10sp";
+                        textColor = subItem.textColor or "#FF7BB4ED";
+                        layout_width = "wrap_content";
+                        layout_height = "wrap_content";
+                        ellipsize = "marquee";
+                        singleLine = "true";
+                        focusable = "true";
+                        focusableInTouchMode = "true";
+                    })
+
+                    if subItem.sub_text then
+                        table.insert(textLayout, {
+                            TextView;
+                            id = textId .. "_sub";
+                            text = Html.fromHtml(subItem.sub_text);
+                            textSize = "8sp";
+                            textColor = "#FFAAAAAA";
+                            layout_width = "wrap_content";
+                            layout_height = "wrap_content";
+                            ellipsize = "marquee";
+                            singleLine = "true";
+                            focusable = "true";
+                            focusableInTouchMode = "true";
+                        })
+                    end
+
+                    local onChangeListener = function(view, isChecked)
+                        local runnable = {
+                            run = function()
+                                pcall(subItemAction, {text = subItemName}, isChecked, i, j)
+                                if customAction then
+                                    pcall(customAction, {text = subItemName}, isChecked, i, j)
+                                end
+                            end,
+                        }
+                        if subItemType == "switch" then
+                            updateiOSwitch(view, isChecked)
+                        end
+                        rx.b(runnable)
+                    end
+
+                    if subItemType == "switch" then
+                        table.insert(rowLayout, textLayout)
+                        table.insert(rowLayout, createSwitch(componentId, isChecked, onChangeListener))
+                    elseif subItemType == "checkbox" then
+                        table.insert(rowLayout, createCheckbox(componentId, isChecked, onChangeListener))
+                        table.insert(rowLayout, textLayout)
+                    end
+                end
+
+                local layoutView = loadlayout(rowLayout)
+                func.addView(layoutView)
+
+                for j, subItem in ipairs(item) do
+                    local componentId = "component_" .. menuType .. "_" .. i .. "_" .. j
+                    local textView = _G["TabText" .. menuType .. "_" .. i .. "_" .. j]
+                    local subTextView = _G["TabText" .. menuType .. "_" .. i .. "_" .. j .. "_sub"]
+
+                    if textView then
+                        enableMarquee(textView, subItem.name or "")
+                        -- Perbaikan: Pastikan makeTextClickable dipanggil di sini, agar text bisa toggle checkbox/switch
+                        makeTextClickable(textView, componentId, subItem.type)
+                    end
+                    if subTextView then
+                        enableMarquee(subTextView, subItem.sub_text or "")
+                        makeTextClickable(subTextView, componentId, subItem.type)
+                    end
+
+                    if subItem.type == "checkbox" then
+                        local checkboxView = _G[componentId]
+                        if checkboxView then
+                            applyCheckboxStyling(checkboxView, false)
+                        end
+                    end
+                end
+
+            else
+                local actualItem = type(item) == "table" and #item == 1 and item[1] or item
+                local itemName = actualItem.name or "Unknown Option"
+                local itemType = actualItem.type or "switch"
+                local itemAction = actualItem.action
+                local isChecked = false
+
+                local componentId = "component_" .. menuType .. "_" .. i
+                local textId = "TabText" .. menuType .. i
+
+                local mainLayout = {
+                    LinearLayout;
+                    orientation = "vertical";
+                    layout_width = "match_parent";
+                    layout_height = "wrap_content";
+                    padding = "4.1dp";
+                }
+
+                if itemType == "switch" or itemType == "checkbox" then
+                    local rowLayout = {
+                        LinearLayout;
+                        orientation = "horizontal";
+                        layout_width = "match_parent";
+                        layout_height = "wrap_content";
+                    }
+
+                    local textLayout = {
+                        LinearLayout;
+                        orientation = "vertical";
+                        layout_width = "0dp";
+                        layout_weight = 1;
+                        layout_height = "wrap_content";
+                        layout_marginStart = "2.5dp";
+                        layout_marginEnd = "2.5dp";
+                        layout_gravity = "center_vertical";
+                    }
+
+                    table.insert(textLayout, {
+                        TextView;
+                        id = textId;
+                        text = Html.fromHtml(itemName);
+                        textSize = "10sp";
+                        textColor = actualItem.textColor or "#FF7BB4ED";
+                        layout_width = "wrap_content";
+                        layout_height = "wrap_content";
+                        ellipsize = "marquee";
+                        singleLine = "true";
+                        focusable = "true";
+                        focusableInTouchMode = "true";
+                    })
+
+                    if actualItem.sub_text then
+                        table.insert(textLayout, {
+                            TextView;
+                            id = textId .. "_sub";
+                            text = Html.fromHtml(actualItem.sub_text);
+                            textSize = "8sp";
+                            textColor = "#FFAAAAAA";
+                            layout_width = "wrap_content";
+                            layout_height = "wrap_content";
+                            ellipsize = "marquee";
+                            singleLine = "true";
+                            focusable = "true";
+                            focusableInTouchMode = "true";
+                        })
+                    end
+
+                    if itemType == "switch" then
+                        local onChangeListener = function(view, isChecked)
+                            local runnable = {
+                                run = function()
+                                    pcall(itemAction, {text = itemName}, isChecked, i)
+                                    if customAction then
+                                        pcall(customAction, {text = itemName}, isChecked, i)
+                                    end
+                                end,
+                            }
+                            updateiOSwitch(view, isChecked)
+                            rx.b(runnable)
+                        end
+                        table.insert(rowLayout, textLayout)
+                        table.insert(rowLayout, createSwitch(componentId, isChecked, onChangeListener))
+                    elseif itemType == "checkbox" then
+                        local onChangeListener = function(view, isChecked)
+                            local runnable = {
+                                run = function()
+                                    pcall(itemAction, {text = itemName}, isChecked, i)
+                                    if customAction then
+                                        pcall(customAction, {text = itemName}, isChecked, i)
+                                    end
+                                end,
+                            }
+                            rx.b(runnable)
+                        end
+                        table.insert(rowLayout, createCheckbox(componentId, isChecked, onChangeListener))
+                        table.insert(rowLayout, textLayout)
+                    end
+
+                    table.insert(mainLayout, rowLayout)
+
+                elseif itemType == "button" then
+                    local onClickListener = function(view)
+                        local runnable = {
+                            run = function()
+                                pcall(itemAction, {text = itemName}, false, i)
+                                if customAction then
+                                    pcall(customAction, {text = itemName}, false, i)
+                                end
+                            end,
+                        }
+                        rx.b(runnable)
+                    end
+                    table.insert(mainLayout, createButton(componentId, itemName, onClickListener))
+
+                elseif itemType == "togglebutton" then
+                    local onChangeListener = function(view, isChecked)
+                        if isChecked then
+                            view.setBackground(getShapeBackground(button_color_on, 16, 1.5, button_stroke_color_on))
+                        else
+                            view.setBackground(getShapeBackground(button_color_off, 16, 1.5, button_stroke_color_off))
+                        end
+                        local runnable = {
+                            run = function()
+                                pcall(itemAction, {text = itemName}, isChecked, i)
+                                if customAction then
+                                    pcall(customAction, {text = itemName}, isChecked, i)
+                                end
+                            end,
+                        }
+                        rx.b(runnable)
+                    end
+                    table.insert(mainLayout, createToggleButton(
+                        componentId,
+                        actualItem.name,
+                        actualItem.textOn,
+                        actualItem.textOff,
+                        isChecked,
+                        onChangeListener
+                    ))
+
+                elseif itemType == "seekbar" then
+                    local controlLayout = {
+                        LinearLayout;
+                        orientation = "horizontal";
+                        layout_width = "match_parent";
+                        layout_height = "wrap_content";
+                    }
+
+                    local textLayout = {
+                        LinearLayout;
+                        orientation = "vertical";
+                        layout_width = "0dp";
+                        layout_weight = 1;
+                        layout_height = "wrap_content";
+                        layout_marginStart = "2.5dp";
+                        layout_marginEnd = "2.5dp";
+                        layout_gravity = "center_vertical";
+                    }
+
+                    local checkboxId = componentId .. "_checkbox"
+                    local seekbarId = componentId .. "_seekbar"
+                    local progressTextId = componentId .. "_progress"
+
+                    local onCheckboxChange = function(view, isChecked)
+                        local seekbar = seekbarId and _G[seekbarId] or nil
+                        if seekbar then
+                            seekbar.setEnabled(isChecked)
+                        end
+                        local runnable = {
+                            run = function()
+                                local currentProgress = seekbar and seekbar.getProgress() or (actualItem.progress or 0)
+                                pcall(itemAction, {text = itemName, value = currentProgress}, isChecked, i)
+                                if customAction then
+                                    pcall(customAction, {text = itemName, value = currentProgress}, isChecked, i)
+                                end
+                            end,
+                        }
+                        rx.b(runnable)
+                    end
+
+                    local mainTextLayout = {
+                        LinearLayout;
+                        orientation = "horizontal";
+                        layout_width = "wrap_content";
+                        layout_height = "wrap_content";
+                        layout_gravity = "center_vertical";
+                    }
+
+                    table.insert(mainTextLayout, {
+                        TextView;
+                        id = textId;
+                        text = Html.fromHtml(itemName .. ": ");
+                        textSize = "10sp";
+                        textColor = actualItem.textColor or "#FF7BB4ED";
+                        layout_width = "wrap_content";
+                        layout_height = "wrap_content";
+                        ellipsize = "marquee";
+                        singleLine = "true";
+                        focusable = "true";
+                        focusableInTouchMode = "true";
+                    })
+
+                    table.insert(mainTextLayout, {
+                        TextView;
+                        id = progressTextId;
+                        text = tostring(actualItem.progress or 0);
+                        textSize = "10sp";
+                        textColor = "#FFFFFF00";
+                        layout_width = "wrap_content";
+                        layout_height = "wrap_content";
+                    })
+
+                    table.insert(textLayout, mainTextLayout)
+
+                    if actualItem.sub_text then
+                        table.insert(textLayout, {
+                            TextView;
+                            id = textId .. "_sub";
+                            text = Html.fromHtml(actualItem.sub_text);
+                            textSize = "8sp";
+                            textColor = "#FFAAAAAA";
+                            layout_width = "wrap_content";
+                            layout_height = "wrap_content";
+                            ellipsize = "marquee";
+                            singleLine = "true";
+                            focusable = "true";
+                            focusableInTouchMode = "true";
+                        })
+                    end
+
+                    table.insert(controlLayout, createCheckbox(checkboxId, false, onCheckboxChange))
+                    table.insert(controlLayout, textLayout)
+
+                    table.insert(mainLayout, controlLayout)
+
+                    local onSeekBarChange = {
+                        onStartTrackingTouch = function() end,
+                        onStopTrackingTouch = function(seekbar)
+                            local progress = seekbar.getProgress()
+                            local progressText = progressTextId and _G[progressTextId] or nil
+                            if progressText then
+                                progressText.setText(tostring(progress))
+                            end
+                            seekbar.getProgressDrawable().setColorFilter(checkbox_color_on, android.graphics.PorterDuff.Mode.SRC_IN);
+                            seekbar.getThumb().setColorFilter(checkbox_color_on, android.graphics.PorterDuff.Mode.SRC_IN);
+                            local runnable = {
+                                run = function()
+                                    pcall(itemAction, {text = itemName, value = progress}, true, i)
+                                    if customAction then
+                                        pcall(customAction, {text = itemName, value = progress}, true, i)
+                                    end
+                                end,
+                            }
+                            rx.b(runnable)
+                        end,
+                        onProgressChanged = function(seekbar, progress, fromUser)
+                            local progressText = progressTextId and _G[progressTextId] or nil
+                            if progressText then
+                                progressText.setText(tostring(progress))
+                            end
+                        end
+                    }
+
+                    table.insert(mainLayout, createSeekBar(
+                        seekbarId,
+                        actualItem.min,
+                        actualItem.max,
+                        actualItem.progress,
+                        onSeekBarChange
+                    ))
+
+                elseif itemType == "spinner" then
+                    local controlLayout = {
+                        LinearLayout;
+                        orientation = "horizontal";
+                        layout_width = "match_parent";
+                        layout_height = "wrap_content";
+                    }
+
+                    local textLayout = {
+                        LinearLayout;
+                        orientation = "vertical";
+                        layout_width = "0dp";
+                        layout_weight = 1;
+                        layout_height = "wrap_content";
+                        layout_marginStart = "2.5dp";
+                        layout_marginEnd = "2.5dp";
+                        layout_gravity = "center_vertical";
+                    }
+
+                    table.insert(textLayout, {
+                        TextView;
+                        id = textId;
+                        text = Html.fromHtml(itemName);
+                        textSize = "10sp";
+                        textColor = actualItem.textColor or "#FF7BB4ED";
+                        layout_width = "wrap_content";
+                        layout_height = "wrap_content";
+                        ellipsize = "marquee";
+                        singleLine = "true";
+                        focusable = "true";
+                        focusableInTouchMode = "true";
+                    })
+
+                    if actualItem.sub_text then
+                        table.insert(textLayout, {
+                            TextView;
+                            id = textId .. "_sub";
+                            text = Html.fromHtml(actualItem.sub_text);
+                            textSize = "8sp";
+                            textColor = "#FFAAAAAA";
+                            layout_width = "wrap_content";
+                            layout_height = "wrap_content";
+                            ellipsize = "marquee";
+                            singleLine = "true";
+                            focusable = "true";
+                            focusableInTouchMode = "true";
+                        })
+                    end
+
+                    local checkboxId = componentId .. "_checkbox"
+                    local spinnerId = componentId .. "_spinner"
+
+                    local onCheckboxChange = function(view, isChecked)
+                        local spinner = _G[spinnerId]
+                        if spinner then
+                            spinner.setEnabled(isChecked)
+                            local selectedView = spinner.getSelectedView()
+                            local spinnerBackground = getShapeBackground(button_color, 16, 1.5, button_stroke_color)
+                            spinner.setPopupBackgroundDrawable(spinnerBackground)
+                            if selectedView then
+                                if isChecked then
+                                    selectedView.setTextColor(text_color)
+                                    spinner.setBackground(getShapeBackground(button_color, 16, 1.5, button_stroke_color))
+                                else
+                                    selectedView.setTextColor(0x50ffffff)
+                                    spinner.setBackground(getShapeBackground(button_color_off2, 16, 1.5, button_stroke_color_off2))
+                                end
+                            end
+                        end
+                    end
+
+                    table.insert(controlLayout, createCheckbox(checkboxId, false, onCheckboxChange))
+                    table.insert(controlLayout, textLayout)
+                    table.insert(mainLayout, controlLayout)
+
+                    table.insert(mainLayout, createSpinner(spinnerId, actualItem.items or {}))
+                end
+
+                local layoutView = loadlayout(mainLayout)
+                func.addView(layoutView)
+
+                if itemType == "spinner" and actualItem.items then
+                    local spinner = _G[componentId .. "_spinner"]
+                    if spinner then
+                        local adapter = ArrayAdapter(activity, android.R.layout.simple_list_item_1, String(actualItem.items))
+                        spinner.setAdapter(adapter)
+                        spinner.onItemSelected = function(l, v, p, id)
+                            local checkbox = _G[componentId .. "_checkbox"]
+                            local isEnabled = checkbox and checkbox.isChecked() or false
+                            if v then
+                                if isEnabled then
+                                    v.textColor = text_color
+                                    spinner.setBackground(getShapeBackground(button_color, 16, 1.5, button_stroke_color))
+                                else
+                                    v.textColor = 0x50ffffff
+                                    spinner.setBackground(getShapeBackground(button_color_off2, 16, 1.5, button_stroke_color_off2))
+                                end
+                            end
+                            local runnable = {
+                                run = function()
+                                    pcall(itemAction, {text = itemName}, p + 1, i)
+                                    if customAction then
+                                        pcall(customAction, {text = itemName}, p + 1, i)
+                                    end
+                                end,
+                            }
+                            rx.b(runnable)
+                        end
+                        spinner.Enabled = false
+                        local selectedView = spinner.getSelectedView()
+                        if selectedView then
+                            selectedView.setTextColor(0x50ffffff)
+                        end
+                    end
+
+                    local checkboxView = _G[componentId .. "_checkbox"]
+                    if checkboxView then
+                        applyCheckboxStyling(checkboxView, false)
+                    end
+                end
+
+                if itemType == "seekbar" then
+                    local seekbar = componentId and _G[componentId .. "_seekbar"] or nil
+                    if seekbar then
+                        seekbar.setEnabled(false)
+                        seekbar.getProgressDrawable().setColorFilter(checkbox_color_on, android.graphics.PorterDuff.Mode.SRC_IN);
+                        seekbar.getThumb().setColorFilter(checkbox_color_on, android.graphics.PorterDuff.Mode.SRC_IN);
+                        seekbar.setProgress(actualItem.progress or 0)
+                        local progressText = progressTextId and _G[progressTextId] or nil
+                        if progressText then
+                            progressText.setText(tostring(actualItem.progress or 0))
+                        end
+                    end
+
+                    local checkboxView = _G[componentId .. "_checkbox"]
+                    if checkboxView then
+                        applyCheckboxStyling(checkboxView, false)
+                    end
+
+                    local textView = textId and _G[textId] or nil
+                    local subTextView = textId and _G[textId .. "_sub"] or nil
+                    local checkboxId = componentId .. "_checkbox"
+                    if textView then
+                        enableMarquee(textView, itemName)
+                        makeTextClickable(textView, checkboxId, "checkbox")
+                    end
+                    if subTextView then
+                        enableMarquee(subTextView, actualItem.sub_text)
+                        makeTextClickable(subTextView, checkboxId, "checkbox")
+                    end
+                end
+
+                if itemType == "spinner" then
+                    local textView = textId and _G[textId] or nil
+                    local subTextView = textId and _G[textId .. "_sub"] or nil
+                    local checkboxId = componentId .. "_checkbox"
+                    if textView then
+                        enableMarquee(textView, itemName)
+                        makeTextClickable(textView, checkboxId, "checkbox")
+                    end
+                    if subTextView then
+                        enableMarquee(subTextView, actualItem.sub_text)
+                        makeTextClickable(subTextView, checkboxId, "checkbox")
+                    end
+                end
+
+                if itemType == "button" then
+                    local view = componentId and _G[componentId] or nil
+                    if view then
+                        view.setAllCaps(false)
+                        view.setBackground(getShapeBackground(button_color, 16, 1.5, button_stroke_color))
+                    end
+                end
+
+                if itemType == "togglebutton" then
+                    local view = componentId and _G[componentId] or nil
+                    if view then
+                        view.setAllCaps(false)
+                        view.setBackground(getShapeBackground(button_color, 16, 1.5, button_stroke_color))
+                    end
+                end
+
+                if itemType == "switch" or itemType == "checkbox" then
+                    local textView = textId and _G[textId] or nil
+                    local subTextView = textId and _G[textId .. "_sub"] or nil
+                    if textView then
+                        enableMarquee(textView, itemName)
+                        makeTextClickable(textView, componentId, itemType)
+                    end
+                    if subTextView then
+                        enableMarquee(subTextView, actualItem.sub_text)
+                        makeTextClickable(subTextView, componentId, itemType)
+                    end
+                    if itemType == "checkbox" then
+                        local checkboxView = _G[componentId]
+                        if checkboxView then
+                            applyCheckboxStyling(checkboxView, false)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    createLayout(menuItems, nil)
+end
+
+-- Contoh penggunaan sesuai kode kamu:
+
+CreateMenu(
+    tab1,
+    PageLayout_1,
+    "1",
+    {
+        {
+            name = "Enemy No Flee",
+            sub_text = "subtext",
+            type = "checkbox",
+            action = function(v, isChecked, index)
+                if isChecked then
+                    log(v.text)
+                else
+                    log(v.text)
+                end
+            end
+        },
+        {
+            name = "Enemy No Flee",
+            textOn = "Enemy No Flee On",
+            textOff = "Enemy No Flee Off",
+            type = "togglebutton",
+            action = function(v, isChecked, index)
+                if isChecked then
+                    log(v.text)
+                else
+                    log(v.text)
+                end
+            end
+        },
+        {
+            name = "Enemy No Flee",
+            type = "button",
+            action = function(v, isChecked, index)
+                log(v.text)
+            end
+        },
+        {
+            name = "Enemy No Flee",
+            sub_text = "subtext",
+            type = "spinner",
+            items = {"options 1", "options 2"},
+            action = function(v, p, index)
+                if p == 1 then
+                    log(v.text)
+                elseif p == 2 then
+                    log(v.text)
+                end
+            end
+        },
+        {
+            name = "Enemy No Flee",
+            sub_text = "text",
+            type = "seekbar",
+            min = 10,
+            max = 1000,
+            progress = 400,
+            action = function(v, isChecked, index)
+                if isChecked then
+                    log(v.value)
+                else
+                    log(v.text)
+                end
+            end
+        }
+    }
+)
+
+CreateMenu(
+    tab2,
+    PageLayout_2,
+    "2",
+    {
+        {
+            {
+                name = "Enemy No Flee",
+                sub_text = "subtext",
+                type = "checkbox",
+                action = function(v, isChecked, index, subIndex)
+                    if isChecked then
+                        log("Checkbox 1: " .. v.text .. " checked")
+                    else
+                        log("Checkbox 1: " .. v.text .. " unchecked")
+                    end
+                end
+            },
+            {
+                name = "Enemy Invincible",
+                sub_text = "subtext2",
+                type = "switch",
+                action = function(v, isChecked, index, subIndex)
+                    if isChecked then
+                        log("Switch 1: " .. v.text .. " enabled")
+                    else
+                        log("Switch 1: " .. v.text .. " disabled")
+                    end
+                end
+            }
+        },
+        {
+            name = "Single Item Example",
+            type = "button",
+            action = function(v, isChecked, index)
+                log("Button clicked: " .. v.text)
+            end
+        }
+    }
+)
+
+
+mainLayoutParams.x = Point_posX.getInt(Point)
+mainLayoutParams.y = Point_posY.getInt(Point)
+window.addView(xfq, mainLayoutParams)
+if (Point_mVanishingTime < 0) then
+    Tools.a(suspended_ball, 255.0)
+else 
+    Point_postCallback(true)
+end
+end
+
+Lock.Ui(invoke)
