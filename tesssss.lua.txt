@@ -1,7 +1,6 @@
 -- ❏━━━━━━━━━━━━━━❒ -- START -- ❏━━━━━━━━━━━━━━❒ -- 
 gg.setVisible(false)
 gg.setRanges(gg.REGION_C_ALLOC | gg.REGION_ANONYMOUS)
---toast.warn("Please wait...")
 local imports = {
     "android.*",
     "android.app.*",
@@ -42,7 +41,7 @@ local imports = {
 for _, lib in ipairs(imports) do
     import(lib)
 end
-Gravity = luajava.bindClass("android.view.Gravity")
+
 toast.setGravity(Gravity.BOTTOM)
 toast.setMode(1)
 
@@ -138,7 +137,7 @@ end
 
 -- Load il2cpp api if not loaded
 if not Il2cpp then
-    toast.hint("Please wait...")
+    toast.white("Please wait...")
     local content = gg.makeRequest('https://drive.usercontent.google.com/download?id=1kzqWWOYN6l2oKFwba3TdFuWT-VAHBSsW&export=download&authuser=0').content
     local file = io.open('il2cppapi.lua', 'w+')
     file:write(content)
@@ -193,7 +192,7 @@ local function GetIl2CppMethod(name, clazz, method)
 
     -- Update offsets table with new or existing offset
     if not offsets[name] then
-        toast.hint("Please wait..")
+        toast.white("Please wait..")
         local search = Il2cpp.FindMethods({method})
         if search and search[1] then
             for k, v in ipairs(search[1]) do
@@ -474,32 +473,32 @@ local startXigncode, endXigncode = GetLibAddress('libxigncode.so');
 local startMain, endMain = GetLibAddress('libmain.so');
 
 function bypass()
-msv(startIl2cpp,4,0);
-msv(startIl2cpp + 0x10,4,0);
-msv(startIl2cpp + 0x20,4,0);
-msv(startIl2cpp + 0x40,4,0);
-msv(startUnity,4,0);
-msv(startUnity + 0x10,4,0);
-msv(startUnity + 0x20,4,0);
-msv(startUnity + 0x40,4,0);
-msv(startXigncode,4,0);
-msv(startXigncode + 0x10,4,0);
-msv(startXigncode + 0x20,4,0);
-msv(startXigncode + 0x40,4,0);
-msv(startMain,4,0);
-msv(startMain + 0x10,4,0);
-msv(startMain + 0x20,4,0);
-msv(startMain + 0x40,4,0);
+    msv(startIl2cpp,4,0, true);
+    msv(startIl2cpp + 0x10,4,0, true);
+    msv(startIl2cpp + 0x20,4,0, true);
+    msv(startIl2cpp + 0x40,4,0, true);
+    msv(startUnity,4,0, true);
+    msv(startUnity + 0x10,4,0, true);
+    msv(startUnity + 0x20,4,0, true);
+    msv(startUnity + 0x40,4,0, true);
+    msv(startXigncode,4,0, true);
+    msv(startXigncode + 0x10,4,0, true);
+    msv(startXigncode + 0x20,4,0, true);
+    msv(startXigncode + 0x40,4,0, true);
+    msv(startMain,4,0, true);
+    msv(startMain + 0x10,4,0, true);
+    msv(startMain + 0x20,4,0, true);
+    msv(startMain + 0x40,4,0, true);
 end
 
 if get_pkgs ~= targetPkg then
-    toast.error("~ This script is for " .. targetApk)
+    toast.white("~ This script is for " .. targetApk)
    -- os.exit()
 else
     load_offset=gg.makeRequest("https://raw.githubusercontent.com/cabinz3q/assets/refs/heads/main/toram_offset.lua").content
     pcall(load(load_offset))
-    toast.hint("Please wait...")
-    bypasser()
+    toast.white("Please wait...")
+    bypass()
     getWallHack()
 end
 
@@ -621,8 +620,8 @@ local log = function(text,color, size)
     }
 --    Runlog_list.addView(tmp)
 --    Runlog.fullScroll(View.FOCUS_DOWN)
-    print(os.date(" [%Y-%m-%d %H:%M:%S] ") .. text)
-     toast.hint(text)
+    print(os.date(" [%H:%M:%S] ") .. text)
+     toast.white(text)
 end
 
 
@@ -1123,14 +1122,6 @@ invoke = function()
         window.updateViewLayout(xfc, mainLayoutParams)
     end
 
-    local function showToast(msg, duration)
-        if duration then
-            toast.error(msg, duration)
-        else
-            toast.hint(msg)
-        end
-    end
-
     local function Point_postCallback(post)
         local runnable = {
             run = function()
@@ -1173,12 +1164,12 @@ invoke = function()
 
     -- KILL MENU
     local function onRealExit(v)
-        showToast("Menu Killed~", 1500)
+        toast.white("Menu Killed~", 1500)
         Point_posX.setInt(Point, mainLayoutParams.x)
         Point_posY.setInt(Point, mainLayoutParams.y)
         FloatPanel.getDeclaredMethod("b").setAccessible(true).invoke(Point)
         Point.d()
-        showToast("Thanks for using! Goodbye")
+        toast.white("Thanks for using! Goodbye")
         window.removeView(xfc)
         Point_postCallback(false)
         Lock.unUi()
@@ -2804,5 +2795,7 @@ else
     Point_postCallback(true)
 end
 end
+
+toast.white("Menu is ready")
 
 Lock.Ui(invoke)
